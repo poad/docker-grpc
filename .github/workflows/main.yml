@@ -1,0 +1,57 @@
+name: Docker build and push
+ 
+on:
+  push:
+    branches:
+    - master 
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron:  '0 0 * * 2'
+
+jobs:
+  docker_build:
+    strategy:
+      matrix:
+        versions: [
+          { dir: 'grpc', tag: 'grpc' }
+        ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+    - name: "Build ${{ matrix.versions.tag }}"
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+      run: |
+        CUR=$(pwd) && \
+        cd ${{ matrix.versions.dir }} && \
+        IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
+        docker build -t ${IMAGRE_NAME} . && \
+        cd ${CUR}
+
+  docker_push:
+    strategy:
+      matrix:
+        versions: [
+          { dir: 'grpc', tag: 'grpc' }
+        ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+    - name: Build ${{ matrix.versions.tag }}
+      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+      run: |
+        CUR=$(pwd) && \
+        cd ${{ matrix.versions.dir }} && \
+        IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
+        docker build -t ${IMAGRE_NAME} . && \
+        cd ${CUR}
+
+    - name: Push ${{ matrix.versions.tag }}
+      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u poad --password-stdin && \
+        IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
+        docker push ${IMAGRE_NAME}
