@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { dir: 'grpc', tag: 'grpc' }
+          { dir: 'grpc', tag: 'slim' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { dir: 'grpc', tag: 'grpc' }
+          { dir: 'grpc', tag: 'slim' }
         ]
     runs-on: ubuntu-latest
     steps:
