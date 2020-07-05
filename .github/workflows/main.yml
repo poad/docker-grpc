@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { dir: 'grpc', tag: 'slim' }
+          { tag: 'slim' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -25,7 +25,6 @@ jobs:
       if: github.event_name == 'pull_request' && github.event_name != 'schedule'
       run: |
         CUR=$(pwd) && \
-        cd ${{ matrix.versions.dir }} && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
         docker build -t ${IMAGRE_NAME} . && \
         cd ${CUR}
@@ -34,7 +33,7 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { dir: 'grpc', tag: 'slim' }
+          { tag: 'slim' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +43,6 @@ jobs:
       if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
       run: |
         CUR=$(pwd) && \
-        cd ${{ matrix.versions.dir }} && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
         docker build -t ${IMAGRE_NAME} . && \
         cd ${CUR}
