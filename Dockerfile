@@ -66,9 +66,12 @@ ARG buildDeps=' \
 		libssl-dev \
 		libsctp-dev'
 
-RUN apt-get update -qq \
+RUN mkdir -p /usr/share/man/man1/ \
+ && apt-get update -qq \
  && apt-get install --no-install-recommends -qqy ca-certificates gnupg2 binutils apt-utils \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
+ && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 \
+ && echo 'deb http://repos.azulsystems.com/debian stable main' >> /etc/apt/sources.list.d/zulu.list \
  && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
@@ -91,7 +94,11 @@ RUN apt-get update -qq \
         libssl1.1 \
         libsctp1 \
         curl \
+        zulu-repo \
         ${buildDeps} \
+ && apt-get update -qq \
+ && apt-get install -qqy --no-install-recommends \
+         zulu-11 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog \
  && export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
