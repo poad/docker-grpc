@@ -32,13 +32,13 @@ RUN curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg
  && tar xf protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz \
  && rm -f tar xf protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz \
  && mv /tmp/protobuf-${PROTOCOL_BUFFERS_VERSION} /tmp/protobuf \
- && curl --proto '=https' --tlsv1.2 -sSof /tmp/rust-install.sh https://sh.rustup.rs \
+ && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust-install.sh \
  && curl -fsSL -o elixir-src.tar.gz ${ELIXIR_DOWNLOAD_URL} \
  && echo "${ELIXIR_DOWNLOAD_SHA256}  elixir-src.tar.gz" | sha256sum -c - \
  && mkdir -p /usr/local/src/elixir \
  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
  && rm elixir-src.tar.gz \
- && curl -fSL -o /tmp/otp-src.tar.gz "${OTP_DOWNLOAD_URL}" \
+ && curl -fSL -o /tmp/otp-src.tar.gz ${OTP_DOWNLOAD_URL} \
  && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c - 
 
 
@@ -114,6 +114,6 @@ RUN apt-get update -qq \
  && ldconfig \
  && cd /usr/local/src/elixir \
  && make install clean \
- && apt-get purge -y --auto-remove ${buildDeps} curl \
- && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir $ERL_TOP /var/lib/apt/lists/* /tmp/*
- 
+ && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /var/lib/apt/lists/* /tmp/*
+RUN cargo install protobuf-codegen \
+ && cargo install grpc-compiler
