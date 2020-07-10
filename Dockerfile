@@ -32,17 +32,17 @@ RUN curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg
  && tar xf protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz \
  && rm -f tar xf protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz \
  && mv /tmp/protobuf-${PROTOCOL_BUFFERS_VERSION} /tmp/protobuf \
- && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust-install.sh \
+ && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh \
  && curl -fsSL -o elixir-src.tar.gz ${ELIXIR_DOWNLOAD_URL} \
  && echo "${ELIXIR_DOWNLOAD_SHA256}  elixir-src.tar.gz" | sha256sum -c - \
  && mkdir -p /usr/local/src/elixir \
  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
  && rm elixir-src.tar.gz \
  && curl -fSL -o /tmp/otp-src.tar.gz ${OTP_DOWNLOAD_URL} \
- && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c - 
+ && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c -
 
 
-FROM rust:slim AS rust-protocol-buffers
+FROM debian:buster-slim AS rust-protocol-buffers
 
 ENV LANG=C.UTF-8
 
@@ -52,6 +52,7 @@ COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key
 COPY --from=download /tmp/protobuf /tmp/protobuf
 COPY --from=download /usr/local/src/elixir /usr/local/src/elixir
 COPY --from=download /tmp/otp-src.tar.gz /tmp/otp-src.tar.gz
+COPY --from=download /tmp/rustup-init.sh /tmp/rustup-init.sh
 
 WORKDIR /tmp
 
@@ -71,7 +72,9 @@ RUN mkdir -p /usr/share/man/man1/ \
  && apt-get install --no-install-recommends -qqy ca-certificates gnupg2 binutils apt-utils \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 \
- && echo 'deb http://repos.azulsystems.com/debian stable main' >> /etc/apt/sources.list.d/zulu.list \
+ && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
+ && echo "deb http://repos.azulsystems.com/${DISTRIBUTION} stable main" >> /etc/apt/sources.list.d/zulu.list \
+ && cat /etc/apt/sources.list.d/zulu.list \
  && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
@@ -101,11 +104,13 @@ RUN mkdir -p /usr/share/man/man1/ \
          zulu-11 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog \
+ && chmod +x /tmp/rustup-init.sh \
+ && /tmp/rustup-init.sh -y \
  && export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
- && mkdir -vp $ERL_TOP \
- && tar -xzf /tmp/otp-src.tar.gz -C $ERL_TOP --strip-components=1 \
+ && mkdir -vp ${ERL_TOP} \
+ && tar -xzf /tmp/otp-src.tar.gz -C ${ERL_TOP} --strip-components=1 \
  && rm otp-src.tar.gz \
- && ( cd $ERL_TOP \
+ && ( cd ${ERL_TOP} \
     && ./otp_build autoconf \
     && gnuArch="$(dpkg-architecture --query DEB_HOST_GNU_TYPE)" \
     && ./configure --build="$gnuArch" \
@@ -122,5 +127,7 @@ RUN mkdir -p /usr/share/man/man1/ \
  && cd /usr/local/src/elixir \
  && make install clean \
  && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /var/lib/apt/lists/* /tmp/*
-RUN cargo install protobuf-codegen \
- && cargo install grpc-compiler
+RUN rm -rf ${ERL_TOP}
+
+ENV PATH="/root/.cargo/bin/:${PATH}"
+RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
