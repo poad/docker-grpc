@@ -11,7 +11,7 @@ on:
     - cron:  '0 0 * * 2'
 
 jobs:
-  docker_build:
+  docker_build_push:
     strategy:
       matrix:
         versions: [
@@ -20,35 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
-    - name: "Build ${{ matrix.versions.tag }}"
-      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+    - name: Build
       run: |
         CUR=$(pwd) && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
         docker build -t ${IMAGRE_NAME} . && \
         cd ${CUR}
 
-  docker_push:
-    strategy:
-      matrix:
-        versions: [
-          { tag: 'slim' }
-        ]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
-    - name: Build ${{ matrix.versions.tag }}
-      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
-      run: |
-        CUR=$(pwd) && \
-        IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
-        docker build -t ${IMAGRE_NAME} . && \
-        cd ${CUR}
-
-    - name: Push ${{ matrix.versions.tag }}
-      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+    - name: Push
+      if: github.event_name != 'pull_request'
       run: |
         echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u poad --password-stdin && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
