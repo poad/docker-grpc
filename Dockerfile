@@ -131,3 +131,7 @@ RUN rm -rf ${ERL_TOP}
 
 ENV PATH="/root/.cargo/bin/:${PATH}"
 RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
+
+FROM rust-protocol-buffers as compose
+
+RUN curl -sSL "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
