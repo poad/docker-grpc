@@ -15,7 +15,8 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { tag: 'slim' }
+          { tag: 'slim', target: 'rust-protocol-buffers' },
+          { tag: 'compose', target: 'compose' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +25,7 @@ jobs:
       run: |
         CUR=$(pwd) && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
-        docker build -t ${IMAGRE_NAME} . && \
+        docker build --target ${{ matrix.versions.target }} -t ${IMAGRE_NAME} . && \
         cd ${CUR}
 
     - name: Push
