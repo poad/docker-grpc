@@ -3,6 +3,8 @@ ARG PROTOCOL_BUFFERS_VERSION="3.12.3"
 ARG GRPC_VERSION="1.30.0"
 ARG GRPC_JAVA_VERSION="1.30.1"
 
+ARG COMPOSE_VERSION="1.26.2"
+
 ARG OTP_VERSION="23.0.2"
 
 ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/archive/OTP-${OTP_VERSION}.tar.gz"
@@ -134,4 +136,7 @@ RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
 
 FROM rust-protocol-buffers as compose
 
-RUN curl -sSL "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+ARG COMPOSE_VERSION
+
+RUN curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+ && chmod +x /usr/local/bin/docker-compose
