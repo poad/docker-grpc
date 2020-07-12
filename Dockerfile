@@ -44,17 +44,13 @@ RUN curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg
  && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c -
 
 
-FROM debian:buster-slim AS rust-protocol-buffers
+FROM debian:buster-slim AS default
 
 ENV LANG=C.UTF-8
 
 ARG PROTOCOL_BUFFERS_VERSION
 
 COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key
-COPY --from=download /tmp/protobuf /tmp/protobuf
-COPY --from=download /usr/local/src/elixir /usr/local/src/elixir
-COPY --from=download /tmp/otp-src.tar.gz /tmp/otp-src.tar.gz
-COPY --from=download /tmp/rustup-init.sh /tmp/rustup-init.sh
 
 WORKDIR /tmp
 
@@ -105,10 +101,17 @@ RUN mkdir -p /usr/share/man/man1/ \
  && apt-get install -qqy --no-install-recommends \
          zulu-11 \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog \
- && chmod +x /tmp/rustup-init.sh \
+ && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog
+
+
+COPY --from=download /tmp/rustup-init.sh /tmp/rustup-init.sh
+RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
- && export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
+ && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
+
+
+COPY --from=download /tmp/otp-src.tar.gz /tmp/otp-src.tar.gz
+RUN export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
  && mkdir -vp ${ERL_TOP} \
  && tar -xzf /tmp/otp-src.tar.gz -C ${ERL_TOP} --strip-components=1 \
  && rm otp-src.tar.gz \
@@ -119,22 +122,29 @@ RUN mkdir -p /usr/share/man/man1/ \
     && make -j$(nproc) \
     && make install ) \
  && find /usr/local -name examples | xargs rm -rf \
- && cd /tmp/protobuf \
+ && rm -rf ${ERL_TOP} /var/lib/apt/lists/* 
+
+COPY --from=download /tmp/protobuf /tmp/protobuf
+RUN cd /tmp/protobuf \
  && ./autogen.sh \
  && ./configure --prefix=/usr \
  && make \
  && make check \
  && make install \
  && ldconfig \
- && cd /usr/local/src/elixir \
+ && rm -rf /tmp/protobuf /var/lib/apt/lists/* 
+
+COPY --from=download /usr/local/src/elixir /usr/local/src/elixir
+RUN cd /usr/local/src/elixir \
  && make install clean \
- && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /var/lib/apt/lists/* /tmp/*
-RUN rm -rf ${ERL_TOP}
+ && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /tmp/*
 
 ENV PATH="/root/.cargo/bin/:${PATH}"
 RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
 
-FROM rust-protocol-buffers as compose
+WORKDIR /root
+
+FROM default as compose
 
 ARG COMPOSE_VERSION
 
