@@ -124,7 +124,7 @@ RUN export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
  && find /usr/local -name examples | xargs rm -rf \
  && rm -rf ${ERL_TOP} /var/lib/apt/lists/* 
 
-ENV PARH="/root/.mix/escripts:${PATH}"
+ENV PARH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
 RUN cd /tmp/protobuf \
