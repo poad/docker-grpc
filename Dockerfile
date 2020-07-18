@@ -124,7 +124,7 @@ RUN export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
  && find /usr/local -name examples | xargs rm -rf \
  && rm -rf ${ERL_TOP} /var/lib/apt/lists/* 
 
-ENV PARH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
+ENV PATH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
 RUN cd /tmp/protobuf \
@@ -141,7 +141,7 @@ RUN cd /usr/local/src/elixir \
  && make install clean \
  && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /tmp/*
 
-ENV PATH="/root/.cargo/bin/:${PATH}"
+ENV PATH="/root/.cargo/bin/:/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
 
 WORKDIR /root
