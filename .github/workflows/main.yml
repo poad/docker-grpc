@@ -27,6 +27,8 @@ jobs:
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
         docker build -t ${IMAGRE_NAME} . --target=${{ matrix.versions.target }} && \
         cd ${CUR}
+    - name: Hadolint
+      uses: brpaz/hadolint-action@master
 
     - name: Push
       if: github.event_name != 'pull_request'
