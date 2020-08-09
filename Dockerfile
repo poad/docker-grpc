@@ -111,24 +111,24 @@ RUN chmod +x /tmp/rustup-init.sh \
 
 
 COPY --from=download /tmp/otp-src.tar.gz /tmp/otp-src.tar.gz
-RUN export ERL_TOP="/usr/src/otp_src_${OTP_VERSION%%@*}" \
- && mkdir -vp ${ERL_TOP} \
- && tar -xzf /tmp/otp-src.tar.gz -C ${ERL_TOP} --strip-components=1 \
+RUN export ERL_TOP=/usr/src/otp_src_"${OTP_VERSION%%@*}" \
+ && mkdir -vp "${ERL_TOP}" \
+ && tar -xzf /tmp/otp-src.tar.gz -C "${ERL_TOP}" --strip-components=1 \
  && rm otp-src.tar.gz \
- && ( cd ${ERL_TOP} \
+ && ( cd "${ERL_TOP}" \
     && ./otp_build autoconf \
     && gnuArch="$(dpkg-architecture --query DEB_HOST_GNU_TYPE)" \
     && ./configure --build="$gnuArch" \
     && make -j$(nproc) \
     && make install ) \
  && find /usr/local -name examples | xargs rm -rf \
- && rm -rf ${ERL_TOP} /var/lib/apt/lists/* 
+ && rm -rf "${ERL_TOP}" /var/lib/apt/lists/* 
 
 ENV PATH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
-RUN cd /tmp/protobuf \
- && ./autogen.sh \
+WORKDIR /tmp/protobuf 
+RUN ./autogen.sh \
  && ./configure --prefix=/usr \
  && make \
  && make check \
@@ -137,8 +137,8 @@ RUN cd /tmp/protobuf \
  && rm -rf /tmp/protobuf /var/lib/apt/lists/* 
 
 COPY --from=download /usr/local/src/elixir /usr/local/src/elixir
-RUN cd /usr/local/src/elixir \
- && make install clean \
+WORKDIR /usr/local/src/elixir
+RUN make install clean \
  && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /tmp/*
 
 ENV PATH="/root/.cargo/bin/:/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
