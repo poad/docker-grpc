@@ -1,18 +1,21 @@
-ARG PROTOCOL_BUFFERS_VERSION="3.12.3"
+ARG PROTOCOL_BUFFERS_VERSION="3.15.3"
 
-ARG GRPC_VERSION="1.30.0"
-ARG GRPC_JAVA_VERSION="1.30.1"
+ARG GRPC_VERSION="1.36.0"
+ARG GRPC_JAVA_VERSION="1.36.0"
 
-ARG COMPOSE_VERSION="1.26.2"
+ARG COMPOSE_VERSION="1.28.4"
 
-ARG OTP_VERSION="23.0.2"
-
+# https://github.com/erlang/otp/releases
+ARG OTP_VERSION="23.2.6"
 ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/archive/OTP-${OTP_VERSION}.tar.gz"
-ARG OTP_DOWNLOAD_SHA256="6bab92d1a1b20cc319cd845c23db3611cc99f8c99a610d117578262e3c108af3"
+# by manual in docker `cuel -sSLo ${OTP_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${OTP_VERSION}.tar.gz && sha256sum ${OTP_VERSION}.tar.gz`
+ARG OTP_DOWNLOAD_SHA256="5bc6b31b36b949bf06e84d51986311fc1d2ace5e717aae3186dc057d4838445d"
 
-ARG ELIXIR_VERSION="v1.10.3"
+# https://github.com/elixir-lang/elixir/releases
+ARG ELIXIR_VERSION="v1.11.3"
 ARG ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz"
-ARG ELIXIR_DOWNLOAD_SHA256="f3035fc5fdade35c3592a5fa7c8ee1aadb736f565c46b74b68ed7828b3ee1897"
+# by manual in docker `cuel -sSLo ${ELIXIR_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz && sha256sum ${ELIXIR_VERSION}.tar.gz`
+ARG ELIXIR_DOWNLOAD_SHA256="d961305e893f4fe1a177fa00233762c34598bc62ff88b32dcee8af27e36f0564"
 
 ARG BASE=erlang:23
 
@@ -55,15 +58,15 @@ COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key
 WORKDIR /tmp
 
 ARG buildDeps=' \
-		autoconf \
-		dpkg-dev \
-		gcc \
-		g++ \
-		make \
-		libncurses-dev \
-		unixodbc-dev \
-		libssl-dev \
-		libsctp-dev'
+        autoconf \
+        dpkg-dev \
+        gcc \
+        g++ \
+        make \
+        libncurses-dev \
+        unixodbc-dev \
+        libssl-dev \
+        libsctp-dev'
 
 RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
