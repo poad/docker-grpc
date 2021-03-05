@@ -1,3 +1,5 @@
+ARG LLVM_VERSION=11
+
 ARG PROTOCOL_BUFFERS_VERSION="3.15.3"
 
 ARG GRPC_VERSION="1.36.0"
@@ -44,7 +46,8 @@ RUN curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg
  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
  && rm elixir-src.tar.gz \
  && curl -fSL -o /tmp/otp-src.tar.gz ${OTP_DOWNLOAD_URL} \
- && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c -
+ && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c - \
+ && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key
 
 
 FROM debian:buster-slim AS default
@@ -52,37 +55,50 @@ FROM debian:buster-slim AS default
 ENV LANG=C.UTF-8
 
 ARG PROTOCOL_BUFFERS_VERSION
+ARG LLVM_VERSION
 
 COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key
+COPY --from=download /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-keyring.gpg.key
 
 WORKDIR /tmp
 
 ARG buildDeps=' \
         autoconf \
+        apt-transport-https \
+        ca-certificates \
+        curl \
         dpkg-dev \
         gcc \
+        gnupg \
         g++ \
         make \
         libncurses-dev \
+        lsb-release \
         unixodbc-dev \
         libssl-dev \
         libsctp-dev'
 
 RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
- && apt-get install --no-install-recommends -qqy ca-certificates gnupg2 binutils apt-utils \
+ && apt-get install --no-install-recommends -qqy lsb-release ca-certificates gnupg2 binutils apt-utils \
+ && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
+ && cat /tmp/docker-archive-keyring.gpg.key | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+ && apt-get update -qq \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
  && echo "deb http://repos.azulsystems.com/${DISTRIBUTION} stable main" >> /etc/apt/sources.list.d/zulu.list \
  && cat /etc/apt/sources.list.d/zulu.list \
- && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+ && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
         automake \
         libtool \
-        clang-10 \
-        lld-10 \
+        clang-${LLVM_VERSION} \
+        lld-${LLVM_VERSION} \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
         libreadline-dev \
         libsqlite3-dev \
         libssl-dev \
@@ -98,12 +114,15 @@ RUN mkdir -p /usr/share/man/man1/ \
         libssl1.1 \
         libsctp1 \
         curl \
+        python3 \
+        python3-dev \
         zulu-repo \
         ${buildDeps} \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
          zulu-11 \
  && apt-get clean \
+ && curl https://bootstrap.pypa.io/get-pip.py | python3 \
  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog
 
 
