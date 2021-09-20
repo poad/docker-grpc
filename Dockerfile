@@ -94,7 +94,7 @@ RUN mkdir -p /usr/share/man/man1/ \
  && echo "deb http://repos.azulsystems.com/${DISTRIBUTION} stable main" > /etc/apt/sources.list.d/zulu.list \
  && cat /tmp/llvm-snapshot.gpg.key | gpg --no-default-keyring --keyring "gnupg-ring:/usr/share/keyrings/llvm-snapshot.gpg" --import - \
  && chmod 644 /usr/share/keyrings/llvm-snapshot.gpg \
- && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/bionic/ llvm-toolchain-bionic-${LLVM_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
+ && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${LLVM_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
         automake \
