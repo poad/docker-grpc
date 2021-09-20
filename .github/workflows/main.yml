@@ -11,7 +11,37 @@ on:
     - cron:  '0 0 * * 2'
 
 jobs:
+  latest_versions:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      protobuf_version: ${{ steps.protobuf.outputs.version }}
+      compose_version: ${{ steps.compose.outputs.version }}
+      llvm_version: ${{ steps.llvm.outputs.version }}
+    steps:
+    - name: prepare
+      run: |
+        sudo apt-get update -qq && \
+        sudo apt-get install --no-install-recommends -qqy \
+          jq
+    - name: find latest vrersions (protocol buffers)
+      id: protobuf
+      run: |
+        PROTOCOL_BUFFERS_VERSION="$(curl -sSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | jq -r .tag_name | cut -d'v' -f2)" && \
+        echo "::set-output name=version::${PROTOCOL_BUFFERS_VERSION}"
+    - name: find latest vrersions (docker compose)
+      id: compose
+      run: |
+        COMPOSE_VERSION="$(curl -sSL https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)" && \
+        echo "::set-output name=version::${COMPOSE_VERSION}"
+    - name: find latest vrersions (llvm)
+      id: llvm
+      run: |
+        LLVM_VERSION="$(curl -sSL https://api.github.com/repos/llvm/llvm-project/releases/latest | jq -r .tag_name | cut -d'-' -f2)" && \
+        echo "::set-output name=version::${LLVM_VERSION}"
+
   docker_build_push:
+    needs: latest_versions
     strategy:
       matrix:
         versions: [
@@ -22,10 +52,20 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Build
+      env: 
+        PROTOCOL_BUFFERS_VERSION: ${{needs.latest_versions.outputs.protobuf_version}}
+        COMPOSE_VERSION: ${{needs.latest_versions.outputs.compose_version}}
+        LLVM_VERSION: ${{needs.latest_versions.outputs.llvm_version}}
       run: |
         CUR=$(pwd) && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
-        docker build -t ${IMAGRE_NAME} . --target=${{ matrix.versions.target }} && \
+        docker build \
+          -t ${IMAGRE_NAME} \
+          --build-arg LLVM_VERSION="$(echo ${LLVM_VERSION} | cut -d . -f1)" \
+          --build-arg PROTOCOL_BUFFERS_VERSION="${PROTOCOL_BUFFERS_VERSION}" \
+          --build-arg COMPOSE_VERSION="${COMPOSE_VERSION}" \
+          . \
+          --target=${{ matrix.versions.target }} && \
         cd ${CUR}
     - name: Hadolint
       uses: brpaz/hadolint-action@master

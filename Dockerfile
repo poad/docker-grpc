@@ -1,9 +1,10 @@
+ARG PROTOCOL_BUFFERS_VERSION="3.18.0"
+
+ARG COMPOSE_VERSION="1.29.2"
+
+ARG JAVA_VERSION=11
+
 ARG LLVM_VERSION=11
-
-ARG PROTOCOL_BUFFERS_VERSION="3.15.3"
-
-ARG GRPC_VERSION="1.36.0"
-ARG GRPC_JAVA_VERSION="1.36.0"
 
 ARG COMPOSE_VERSION="1.28.4"
 
@@ -24,6 +25,8 @@ ARG BASE=erlang:23
 FROM buildpack-deps:stable-curl AS download
 
 ARG PROTOCOL_BUFFERS_VERSION
+
+ARG LLVM_VERSION
 
 ARG OTP_DOWNLOAD_URL
 ARG OTP_DOWNLOAD_SHA256
@@ -56,6 +59,8 @@ ENV LANG=C.UTF-8
 
 ARG PROTOCOL_BUFFERS_VERSION
 ARG LLVM_VERSION
+
+ARG JAVA_VERSION
 
 COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key
 COPY --from=download /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-keyring.gpg.key
@@ -120,7 +125,7 @@ RUN mkdir -p /usr/share/man/man1/ \
         ${buildDeps} \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
-         zulu-11 \
+        zulu${JAVA_VERSION}-ca-jdk-headless \
  && apt-get clean \
  && curl https://bootstrap.pypa.io/get-pip.py | python3 \
  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog
