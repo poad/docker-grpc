@@ -4,7 +4,7 @@ ARG COMPOSE_VERSION="1.29.2"
 
 ARG JAVA_VERSION=11
 
-ARG LLVM_VERSION=11
+ARG LLVM_VERSION=12
 
 ARG COMPOSE_VERSION="1.28.4"
 
@@ -89,12 +89,12 @@ RUN mkdir -p /usr/share/man/man1/ \
  && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
  && cat /tmp/docker-archive-keyring.gpg.key | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
  && apt-get update -qq \
- && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
- && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9 \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
- && echo "deb http://repos.azulsystems.com/${DISTRIBUTION} stable main" >> /etc/apt/sources.list.d/zulu.list \
- && cat /etc/apt/sources.list.d/zulu.list \
- && echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+ && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xB1998361219BD9C9 \
+ && echo "deb http://repos.azulsystems.com/${DISTRIBUTION} stable main" > /etc/apt/sources.list.d/zulu.list \
+ && cat /tmp/llvm-snapshot.gpg.key | gpg --no-default-keyring --keyring "gnupg-ring:/usr/share/keyrings/llvm-snapshot.gpg" --import - \
+ && chmod 644 /usr/share/keyrings/llvm-snapshot.gpg \
+ && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/bionic/ llvm-toolchain-bionic-${LLVM_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
  && apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
         automake \

@@ -45,8 +45,12 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { tag: 'debian-buster', target: 'default' },
-          { tag: 'compose', target: 'compose' }
+          { tag: 'debian-buster', target: 'default', java-version: '11' },
+          { tag: 'compose', target: 'compose', java-version: '11' },
+          { tag: 'debian-buster-java11', target: 'default', java-version: '11' },
+          { tag: 'compose-java11', target: 'compose', java-version: '11' },
+          { tag: 'debian-buster-java17', target: 'default', java-version: '17' },
+          { tag: 'compose-java17', target: 'compose', java-version: '17' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -56,6 +60,7 @@ jobs:
         PROTOCOL_BUFFERS_VERSION: ${{needs.latest_versions.outputs.protobuf_version}}
         COMPOSE_VERSION: ${{needs.latest_versions.outputs.compose_version}}
         LLVM_VERSION: ${{needs.latest_versions.outputs.llvm_version}}
+        JAVA_VERSION: ${{ matrix.versions.java-version }}
       run: |
         CUR=$(pwd) && \
         IMAGRE_NAME=poad/docker-grpc:${{ matrix.versions.tag }} && \
@@ -64,6 +69,7 @@ jobs:
           --build-arg LLVM_VERSION="$(echo ${LLVM_VERSION} | cut -d . -f1)" \
           --build-arg PROTOCOL_BUFFERS_VERSION="${PROTOCOL_BUFFERS_VERSION}" \
           --build-arg COMPOSE_VERSION="${COMPOSE_VERSION}" \
+          --build-arg JAVA_VERSION="${JAVA_VERSION}" \
           . \
           --target=${{ matrix.versions.target }} && \
         cd ${CUR}
