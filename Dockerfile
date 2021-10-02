@@ -1,26 +1,27 @@
+# https://github.com/protocolbuffers/protobuf/releases
 ARG PROTOCOL_BUFFERS_VERSION="3.18.0"
 
-ARG COMPOSE_VERSION="1.29.2"
+ARG COMPOSE_VERSION="2.0.1"
 
 ARG JAVA_VERSION=11
 
-ARG LLVM_VERSION=12
+ARG LLVM_VERSION=13
 
-ARG COMPOSE_VERSION="1.28.4"
+ARG OTP_MAJOR_VERSION=24
 
 # https://github.com/erlang/otp/releases
-ARG OTP_VERSION="23.2.6"
-ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/archive/OTP-${OTP_VERSION}.tar.gz"
+ARG OTP_VERSION="${OTP_MAJOR_VERSION}.1.1"
+ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz"
 # by manual in docker `cuel -sSLo ${OTP_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${OTP_VERSION}.tar.gz && sha256sum ${OTP_VERSION}.tar.gz`
-ARG OTP_DOWNLOAD_SHA256="5bc6b31b36b949bf06e84d51986311fc1d2ace5e717aae3186dc057d4838445d"
+ARG OTP_DOWNLOAD_SHA256="bc001c787ad46702edfcdc762da841aaad708f930a4d779807b596524d97accb"
 
 # https://github.com/elixir-lang/elixir/releases
-ARG ELIXIR_VERSION="v1.11.3"
+ARG ELIXIR_VERSION="v1.12.3"
 ARG ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz"
 # by manual in docker `cuel -sSLo ${ELIXIR_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz && sha256sum ${ELIXIR_VERSION}.tar.gz`
-ARG ELIXIR_DOWNLOAD_SHA256="d961305e893f4fe1a177fa00233762c34598bc62ff88b32dcee8af27e36f0564"
+ARG ELIXIR_DOWNLOAD_SHA512="945e33ca9c3e50015531f87630c1bc1b9966acc64bbf7d01c8c4f8cfc104ee1e08113f572f0ad6a9f5e8ee37e33144e58b2ac33dc0a2b01e1355fc5f8b1b9329"
 
-ARG BASE=erlang:23
+ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
 FROM buildpack-deps:stable-curl AS download
 
@@ -33,7 +34,7 @@ ARG OTP_DOWNLOAD_SHA256
 
 ARG ELIXIR_VERSION
 ARG ELIXIR_DOWNLOAD_URL
-ARG ELIXIR_DOWNLOAD_SHA256
+ARG ELIXIR_DOWNLOAD_SHA512
 
 WORKDIR /tmp
 
@@ -44,7 +45,7 @@ RUN curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg
  && mv /tmp/protobuf-${PROTOCOL_BUFFERS_VERSION} /tmp/protobuf \
  && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh \
  && curl -fsSL -o elixir-src.tar.gz ${ELIXIR_DOWNLOAD_URL} \
- && echo "${ELIXIR_DOWNLOAD_SHA256}  elixir-src.tar.gz" | sha256sum -c - \
+ && echo "${ELIXIR_DOWNLOAD_SHA512}  elixir-src.tar.gz" | sha512sum -c - \
  && mkdir -p /usr/local/src/elixir \
  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
  && rm elixir-src.tar.gz \
