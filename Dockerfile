@@ -1,5 +1,5 @@
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="3.18.0"
+ARG PROTOCOL_BUFFERS_VERSION="3.19.0"
 
 ARG COMPOSE_VERSION="2.0.1"
 
