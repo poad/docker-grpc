@@ -1,7 +1,7 @@
 # https://github.com/protocolbuffers/protobuf/releases
 ARG PROTOCOL_BUFFERS_VERSION="3.19.1"
 
-ARG COMPOSE_VERSION="2.2.1"
+ARG COMPOSE_VERSION="2.2.2"
 
 ARG JAVA_VERSION=11
 
@@ -10,16 +10,16 @@ ARG LLVM_VERSION=13
 ARG OTP_MAJOR_VERSION=24
 
 # https://github.com/erlang/otp/releases
-ARG OTP_VERSION="${OTP_MAJOR_VERSION}.1.7"
+ARG OTP_VERSION="${OTP_MAJOR_VERSION}.2"
 ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz"
 # by manual in docker `curl -sSLo ${OTP_VERSION}.tar.gz https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz && sha256sum ${OTP_VERSION}.tar.gz`
-ARG OTP_DOWNLOAD_SHA256="20075d3e8c495e33b29763d0bba9a5bb274f0a8f4a31ff8d201cd9ea33d5e383"
+ARG OTP_DOWNLOAD_SHA256="af0f1928dcd16cd5746feeca8325811865578bf1a110a443d353ea3e509e6d41"
 
 # https://github.com/elixir-lang/elixir/releases
-ARG ELIXIR_VERSION="v1.13.0"
+ARG ELIXIR_VERSION="v1.13.1"
 ARG ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz"
 # by manual in docker `curl -sSLo ${ELIXIR_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz && sha512sum ${ELIXIR_VERSION}.tar.gz`
-ARG ELIXIR_DOWNLOAD_SHA512="7ec84639ff6c557a58f709ae6d1dccccec4f3fd9c808ca5b96300c2c00837f1617457a56fa4e96b0084c2e6625f1e81c161c963580c837186a60a48cb0d363c6"
+ARG ELIXIR_DOWNLOAD_SHA512="5783cf74c16541970504e24fe4454357f98f2a15b021fda5e514a67c096d000268dff15bccce268ac0d5364856df1ecf0284781fe095a089c542fb8100ea141d"
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
