@@ -1,0 +1,38 @@
+# https://github.com/protocolbuffers/protobuf/releases
+ARG PROTOCOL_BUFFERS_VERSION="3.19.3"
+
+ARG JAVA_VERSION=11
+
+FROM buildpack-deps:stable-curl AS download
+
+ARG PROTOCOL_BUFFERS_VERSION
+
+WORKDIR /tmp
+
+RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOCOL_BUFFERS_VERSION}/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
+ && tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
+ && rm -f tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
+ && mv "/tmp/protobuf-${PROTOCOL_BUFFERS_VERSION}" /tmp/protobuf \
+ && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key
+
+
+FROM debian-buster-java${JAVA_VERSION}-base AS default
+
+COPY --from=download /tmp/protobuf /tmp/protobuf
+WORKDIR /tmp/protobuf 
+RUN ./autogen.sh \
+ && ./configure --prefix=/usr \
+ && make \
+ && make check \
+ && make install \
+ && ldconfig \
+ && rm -rf /tmp/protobuf /var/lib/apt/lists/* 
+
+WORKDIR /root
+
+FROM default as compose
+
+ARG COMPOSE_VERSION
+
+RUN curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+ && chmod +x /usr/local/bin/docker-compose
