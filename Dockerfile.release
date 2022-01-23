@@ -16,7 +16,7 @@ RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://g
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key
 
 
-FROM debian-buster-java${JAVA_VERSION}-base AS default
+FROM poad/docker-grpc:debian-buster-java${JAVA_VERSION}-base AS default
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
 WORKDIR /tmp/protobuf 

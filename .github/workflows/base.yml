@@ -96,7 +96,7 @@ jobs:
         pull: true
         context: ${{ matrix.versions.dir }}
         platforms: ${{ matrix.versions.platforms }}
-        tags: poad/docker-jupyter:${{ matrix.versions.tag }}
+        tags: poad/docker-grpc:${{ matrix.versions.tag }}
         target: ${{ matrix.versions.target }}
         file: Dockerfile.base
         build-args: |
@@ -114,7 +114,7 @@ jobs:
         pull: false
         context: ${{ matrix.versions.dir }}
         platforms: ${{ matrix.versions.platforms }}
-        tags: poad/docker-jupyter:${{ matrix.versions.tag }}
+        tags: poad/docker-grpc:${{ matrix.versions.tag }}
         target: ${{ matrix.versions.target }}
         file: Dockerfile.base
         build-args: |
@@ -128,3 +128,23 @@ jobs:
       uses: brpaz/hadolint-action@master
       with:
         dockerfile: Dockerfile.base
+
+  publish_gh_release:
+    needs: docker_build_push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Create date timestamp
+      run: echo "TIMESTAMP=$(date +%y%m.%d.%H%M)" >> $GITHUB_ENV
+
+    - uses: rickstaa/action-create-tag@v1
+      with:
+        tag: ${{ env.TIMESTAMP }}
+        message: "Latest release"
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TIMESTAMP }}
