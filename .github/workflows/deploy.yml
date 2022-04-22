@@ -61,6 +61,11 @@ jobs:
           echo "COMPOSE_VERSION=${COMPOSE_VERSION}" >> $GITHUB_ENV
           echo "JAVA_VERSION=${JAVA_VERSION}" >> $GITHUB_ENV
 
+    - run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global user.name "${{ secrets.GIT_USERNAME }}"
+        git config --global user.email "${{ secrets.GIT_EMAIL }}"
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: '0'

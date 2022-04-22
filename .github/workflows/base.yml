@@ -4,7 +4,7 @@ on:
   push:
     branches:
     - main 
-  pull_request:
+  pull_request_target:
     branches:
       - main
   schedule:
@@ -136,6 +136,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     steps:
+    - run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global user.name "${{ secrets.GIT_USERNAME }}"
+        git config --global user.email "${{ secrets.GIT_EMAIL }}"
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: '0'
