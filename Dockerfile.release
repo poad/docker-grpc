@@ -1,5 +1,5 @@
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="3.19.3"
+ARG PROTOCOL_BUFFERS_VERSION="3.20.1"
 
 ARG JAVA_VERSION=11
 
