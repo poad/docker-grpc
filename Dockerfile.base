@@ -8,7 +8,7 @@ ARG OTP_MAJOR_VERSION=24.3
 ARG OTP_VERSION="${OTP_MAJOR_VERSION}.4"
 ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz"
 # by manual in docker `curl -sSLo ${OTP_VERSION}.tar.gz https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz && sha256sum ${OTP_VERSION}.tar.gz`
-ARG OTP_DOWNLOAD_SHA256="2d7678c9bc6fcf3a1242c4d1c3864855d85e73ade792cd80adb8a9f379996711"
+ARG OTP_DOWNLOAD_SHA256="76fcca5ba6f11eb9caac32bf053badc46b5d66f867150eef077f4f0d7944ecd7"
 
 # https://github.com/elixir-lang/elixir/releases
 ARG ELIXIR_VERSION="v1.13.4"
