@@ -49,8 +49,10 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { tag: 'debian-buster-java11-base', target: 'base', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'debian-buster-java17-base', target: 'base', java-version: '17', platforms: 'linux/amd64,linux/arm64' }
+          { tag: 'debian-buster-java11-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'debian-buster-java17-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '17', platforms: 'linux/amd64,linux/arm64' },
+          { tag: 'ubuntu-focal-java11-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'ubuntu-focal-java17-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64,linux/arm64' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -60,11 +62,17 @@ jobs:
         COMPOSE_VERSION: ${{needs.latest_versions.outputs.compose_version}}
         LLVM_VERSION: ${{needs.latest_versions.outputs.llvm_version}}
         JAVA_VERSION: ${{ matrix.versions.java-version }}
+        DEBIAN_CODE_NAME: ${{ matrix.versions.debian-code-name }}
+        DISTORIBUTION: ${{ matrix.versions.distoribution }}
+        FLAVOR: ${{ matrix.versions.flavor }}
       run: |
           echo "LLVM_VERSION=$(echo ${LLVM_VERSION} | cut -d . -f1)" >> $GITHUB_ENV
           echo "PROTOCOL_BUFFERS_VERSION=${PROTOCOL_BUFFERS_VERSION}" >> $GITHUB_ENV
           echo "COMPOSE_VERSION=${COMPOSE_VERSION}" >> $GITHUB_ENV
           echo "JAVA_VERSION=${JAVA_VERSION}" >> $GITHUB_ENV
+          echo "DEBIAN_CODE_NAME=${DEBIAN_CODE_NAME}" >> $GITHUB_ENV
+          echo "DISTORIBUTION=${DISTORIBUTION}" >> $GITHUB_ENV
+          echo "FLAVOR=${FLAVOR}" >> $GITHUB_ENV
 
     - uses: actions/checkout@v3
       with:
@@ -109,6 +117,9 @@ jobs:
           PROTOCOL_BUFFERS_VERSION=${{ env.PROTOCOL_BUFFERS_VERSION }}
           COMPOSE_VERSION=${{ env.COMPOSE_VERSION }}
           JAVA_VERSION=${{ env.JAVA_VERSION }}
+          DEBIAN_CODE_NAME=${{ env.DEBIAN_CODE_NAME }}
+          DISTORIBUTION=${{ env.DISTORIBUTION }}
+          FLAVOR=${{ env.FLAVOR }}
 
     - name: "Build and push ${{ matrix.versions.tag }}"
       if: github.event_name != 'pull_request'
@@ -127,6 +138,9 @@ jobs:
           PROTOCOL_BUFFERS_VERSION=${{ env.PROTOCOL_BUFFERS_VERSION }}
           COMPOSE_VERSION=${{ env.COMPOSE_VERSION }}
           JAVA_VERSION=${{ env.JAVA_VERSION }}
+          DEBIAN_CODE_NAME=${{ env.DEBIAN_CODE_NAME }}
+          DISTORIBUTION=${{ env.DISTORIBUTION }}
+          FLAVOR=${{ env.FLAVOR }}
 
     - name: Hadolint
       uses: brpaz/hadolint-action@master

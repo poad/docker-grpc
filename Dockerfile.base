@@ -1,14 +1,10 @@
+ARG DISTORIBUTION=debian
+ARG DEBIAN_CODE_NAME=buster
+ARG FLAVOR="-slim"
+
 ARG COMPOSE_VERSION="2.5.1"
 
 ARG JAVA_VERSION=11
-
-ARG OTP_MAJOR_VERSION=24.3
-
-# https://github.com/erlang/otp/releases
-ARG OTP_VERSION="${OTP_MAJOR_VERSION}.4"
-ARG OTP_DOWNLOAD_URL="https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz"
-# by manual in docker `curl -sSLo ${OTP_VERSION}.tar.gz https://github.com/erlang/otp/releases/download/OTP-${OTP_VERSION}/otp_src_${OTP_VERSION}.tar.gz && sha256sum ${OTP_VERSION}.tar.gz`
-ARG OTP_DOWNLOAD_SHA256="76fcca5ba6f11eb9caac32bf053badc46b5d66f867150eef077f4f0d7944ecd7"
 
 # https://github.com/elixir-lang/elixir/releases
 ARG ELIXIR_VERSION="v1.13.4"
@@ -20,11 +16,7 @@ ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
 ARG LLVM_VERSION=14
 
-FROM buildpack-deps:stable-curl AS download
-
-
-ARG OTP_DOWNLOAD_URL
-ARG OTP_DOWNLOAD_SHA256
+FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
 ARG ELIXIR_VERSION
 ARG ELIXIR_DOWNLOAD_URL
@@ -32,21 +24,23 @@ ARG ELIXIR_DOWNLOAD_SHA512
 
 WORKDIR /tmp
 
-RUN curl -sSLo /tmp/corretto.key https://apt.corretto.aws/corretto.key \
+RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellsoft \
  && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh \
  && curl -fsSL -o elixir-src.tar.gz "${ELIXIR_DOWNLOAD_URL}" \
  && echo "${ELIXIR_DOWNLOAD_SHA512}  elixir-src.tar.gz" | sha512sum -c - \
  && mkdir -p /usr/local/src/elixir \
  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
  && rm elixir-src.tar.gz \
- && curl -fSL -o /tmp/otp-src.tar.gz "${OTP_DOWNLOAD_URL}" \
- && echo "${OTP_DOWNLOAD_SHA256}  /tmp/otp-src.tar.gz" | sha256sum -c - \
+ && curl -sSLo /tmp/erlang-solutions_all.deb https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb \
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
  && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key
 
 
-FROM debian:buster-slim AS base
+FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
+
+ARG DISTORIBUTION
+ARG DEBIAN_CODE_NAME
 
 ENV LANG=C.UTF-8
 
@@ -54,9 +48,10 @@ ARG LLVM_VERSION
 
 ARG JAVA_VERSION
 
-COPY --from=download /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-keyring.gpg.key
-COPY --from=download /tmp/corretto.key /tmp/corretto.key
-COPY --from=download /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key 
+COPY --from=downloader /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-keyring.gpg.key
+COPY --from=downloader /tmp/bellsoft.key /tmp/bellsoft.key
+COPY --from=downloader /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key 
+COPY --from=downloader /tmp/erlang-solutions_all.deb /tmp/erlang-solutions_all.deb
 
 WORKDIR /tmp
 
@@ -79,15 +74,17 @@ ARG buildDeps=' \
 RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
  && apt-get install --no-install-recommends -qqy lsb-release ca-certificates gnupg2 binutils apt-utils \
- && cat /tmp/corretto.key | apt-key add - \
+ && cat /tmp/bellsoft.key | apt-key add - \
  && cat /tmp/docker-archive-keyring.gpg.key | apt-key add - \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
- && rm -rf /tmp/corretto.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key \
- && echo "deb https://apt.corretto.aws stable main" > /etc/apt/sources.list.d/aws-corretto.list \
- && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
+ && rm -rf /tmp/bellsoft.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key \
+ && echo "deb [arch=$(dpkg --print-architecture)] https://apt.bell-sw.com/ stable main" > /etc/apt/sources.list.d/bell-sw.list \
+ && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/${DISTORIBUTION} $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
- && echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
+ && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
+ && dpkg -i /tmp/erlang-solutions_all.deb \
  && apt-get update -qq \
+ && apt-get full-upgrade -qqy \
  && apt-get install -qqy --no-install-recommends \
     automake \
     libtool \
@@ -106,47 +103,32 @@ RUN mkdir -p /usr/share/man/man1/ \
     golang \
     libpq-dev \
     libodbc1 \
-    libssl1.1 \
     libsctp1 \
     curl \
     python3 \
     python3-dev \
     ${buildDeps} \
-    java-${JAVA_VERSION}-amazon-corretto-jdk \
-    clang \
-    lld \
+    bellsoft-java${JAVA_VERSION}-full \
+    clang-${LLVM_VERSION} \
+    lld-${LLVM_VERSION} \
+    esl-erlang \
+  erlang \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/* 
+ && rm -rf /var/lib/apt/lists/* /tmp/erlang-solutions_all.deb
 
-COPY --from=download /tmp/get-pip.py /tmp/get-pip.py
+COPY --from=downloader /tmp/get-pip.py /tmp/get-pip.py
 
 RUN cat /tmp/get-pip.py | python3 \
-  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog /tmp/get-pip.py
+ && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog /tmp/get-pip.py
 
-COPY --from=download /tmp/rustup-init.sh /tmp/rustup-init.sh
+COPY --from=downloader /tmp/rustup-init.sh /tmp/rustup-init.sh
 RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
  && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
 
-ARG OTP_VERSION
-
-COPY --from=download /tmp/otp-src.tar.gz /tmp/otp-src.tar.gz
-RUN export ERL_TOP=/usr/src/otp_src_"${OTP_VERSION%%@*}" \
- && mkdir -vp "${ERL_TOP}" \
- && tar -xzf /tmp/otp-src.tar.gz -C "${ERL_TOP}" --strip-components=1 \
- && rm otp-src.tar.gz \
- && ( cd "${ERL_TOP}" \
-    && ./otp_build autoconf \
-    && gnuArch="$(dpkg-architecture --query DEB_HOST_GNU_TYPE)" \
-    && ./configure --build="$gnuArch" \
-    && make -j$(nproc) \
-    && make install ) \
- && find /usr/local -name examples | xargs rm -rf \
- && rm -rf "${ERL_TOP}" /var/lib/apt/lists/* 
-
 ENV PATH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 
-COPY --from=download /usr/local/src/elixir /usr/local/src/elixir
+COPY --from=downloader /usr/local/src/elixir /usr/local/src/elixir
 WORKDIR /usr/local/src/elixir
 RUN make install clean \
   && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /tmp/*
