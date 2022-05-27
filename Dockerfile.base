@@ -6,31 +6,16 @@ ARG COMPOSE_VERSION="2.5.1"
 
 ARG JAVA_VERSION=11
 
-# https://github.com/elixir-lang/elixir/releases
-ARG ELIXIR_VERSION="v1.13.4"
-ARG ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz"
-# by manual in docker `curl -sSLo ${ELIXIR_VERSION}.tar.gz https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz && sha512sum ${ELIXIR_VERSION}.tar.gz`
-ARG ELIXIR_DOWNLOAD_SHA512="cd3a28cd227bf60f09500563b7ad4700b2688e0361f975268d5fa81b530aee80ed4f8640335bf08a8c544a2f5d79dbf96c97f281bd3bf4582466a73a9d2edbec"
-
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
 ARG LLVM_VERSION=14
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
-ARG ELIXIR_VERSION
-ARG ELIXIR_DOWNLOAD_URL
-ARG ELIXIR_DOWNLOAD_SHA512
-
 WORKDIR /tmp
 
 RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellsoft \
  && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh \
- && curl -fsSL -o elixir-src.tar.gz "${ELIXIR_DOWNLOAD_URL}" \
- && echo "${ELIXIR_DOWNLOAD_SHA512}  elixir-src.tar.gz" | sha512sum -c - \
- && mkdir -p /usr/local/src/elixir \
- && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
- && rm elixir-src.tar.gz \
  && curl -sSLo /tmp/erlang-solutions_all.deb https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb \
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
@@ -38,6 +23,8 @@ RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellso
 
 
 FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
+
+ENV DEBIAN_FRONTEND noninteractive
 
 ARG DISTORIBUTION
 ARG DEBIAN_CODE_NAME
@@ -73,6 +60,7 @@ ARG buildDeps=' \
 
 RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
+ && apt-get full-upgrade -qqy \
  && apt-get install --no-install-recommends -qqy lsb-release ca-certificates gnupg2 binutils apt-utils \
  && cat /tmp/bellsoft.key | apt-key add - \
  && cat /tmp/docker-archive-keyring.gpg.key | apt-key add - \
@@ -84,7 +72,6 @@ RUN mkdir -p /usr/share/man/man1/ \
  && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
  && dpkg -i /tmp/erlang-solutions_all.deb \
  && apt-get update -qq \
- && apt-get full-upgrade -qqy \
  && apt-get install -qqy --no-install-recommends \
     automake \
     libtool \
@@ -112,7 +99,7 @@ RUN mkdir -p /usr/share/man/man1/ \
     clang-${LLVM_VERSION} \
     lld-${LLVM_VERSION} \
     esl-erlang \
-  erlang \
+    elixir \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/erlang-solutions_all.deb
 
@@ -126,12 +113,5 @@ RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
  && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
 
-ENV PATH="/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
-
-COPY --from=downloader /usr/local/src/elixir /usr/local/src/elixir
-WORKDIR /usr/local/src/elixir
-RUN make install clean \
-  && rm -rf /var/lib/apt/lists/* /usr/local/src/elixir /tmp/*
-
-ENV PATH="/root/.cargo/bin/:/github/home/.mix/escripts:/root/.mix/escripts:${PATH}"
-RUN cargo install protobuf-codegen grpcio-compiler grpc-compiler
+ENV PATH="/root/.cargo/bin/:/home/.mix/escripts:/root/.mix/escripts:${PATH}"
+RUN if [ $(dpkg --print-architecture) != "arm64" ]; then cargo install grpc-compiler grpcio-compiler protobuf-codegen; fi
