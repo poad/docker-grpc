@@ -2,7 +2,7 @@ name: Docker build and push (release)
  
 on:
   release:
-
+    type: ['*']
   workflow_dispatch:
 
 jobs:
