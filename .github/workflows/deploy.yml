@@ -61,12 +61,14 @@ jobs:
         COMPOSE_VERSION: ${{needs.latest_versions.outputs.compose_version}}
         LLVM_VERSION: ${{needs.latest_versions.outputs.llvm_version}}
         JAVA_VERSION: ${{ matrix.versions.java-version }}
+        DISTORIBUTION: ${{ matrix.versions.distoribution }}
         DEBIAN_CODE_NAME: ${{ matrix.versions.debian-code-name }}
       run: |
           echo "LLVM_VERSION=$(echo ${LLVM_VERSION} | cut -d . -f1)" >> $GITHUB_ENV
           echo "PROTOCOL_BUFFERS_VERSION=${PROTOCOL_BUFFERS_VERSION}" >> $GITHUB_ENV
           echo "COMPOSE_VERSION=${COMPOSE_VERSION}" >> $GITHUB_ENV
           echo "JAVA_VERSION=${JAVA_VERSION}" >> $GITHUB_ENV
+          echo "DISTORIBUTION=${DISTORIBUTION}" >> $GITHUB_ENV
           echo "DEBIAN_CODE_NAME=${DEBIAN_CODE_NAME}" >> $GITHUB_ENV
 
     - run: |
@@ -115,4 +117,5 @@ jobs:
           PROTOCOL_BUFFERS_VERSION=${{ env.PROTOCOL_BUFFERS_VERSION }}
           COMPOSE_VERSION=${{ env.COMPOSE_VERSION }}
           JAVA_VERSION=${{ env.JAVA_VERSION }}
+          DISTORIBUTION=${{ env.DISTORIBUTION }}
           DEBIAN_CODE_NAME=${{ env.DEBIAN_CODE_NAME }}

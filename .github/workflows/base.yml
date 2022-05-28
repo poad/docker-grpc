@@ -3,10 +3,14 @@ name: Docker build and push (base)
 on:
   push:
     branches:
-    - main 
+      - main 
+    paths-ignore:
+      - '.github/workflows/deploy.yml'
   pull_request_target:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/deploy.yml'
   schedule:
     - cron:  '0 0 * * 2'
 
