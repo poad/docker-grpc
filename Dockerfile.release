@@ -1,7 +1,7 @@
 ARG DEBIAN_CODE_NAME=buster
 
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="21.0"
+ARG PROTOCOL_BUFFERS_VERSION="21.1"
 
 ARG JAVA_VERSION=11
 
