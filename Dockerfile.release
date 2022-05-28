@@ -1,11 +1,14 @@
+ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=buster
 
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="21.0"
+ARG PROTOCOL_BUFFERS_VERSION="21.1"
 
 ARG JAVA_VERSION=11
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS download
+
+ARG DISTORIBUTION
 
 ARG PROTOCOL_BUFFERS_VERSION
 
@@ -15,10 +18,10 @@ RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://g
  && tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && rm -f tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && mv "/tmp/protobuf-${PROTOCOL_BUFFERS_VERSION}" /tmp/protobuf \
- && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key
+ && curl -fsSL https://download.docker.com/linux/${DISTORIBUTION}/gpg -o /tmp/docker-archive-keyring.gpg.key
 
 
-FROM poad/docker-grpc:debian-${DEBIAN_CODE_NAME}-java${JAVA_VERSION}-base AS default
+FROM poad/docker-grpc:${DISTORIBUTION}-${DEBIAN_CODE_NAME}-java${JAVA_VERSION}-base AS default
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
 WORKDIR /tmp/protobuf 
