@@ -40,18 +40,18 @@ jobs:
     strategy:
       matrix:
         versions: [
-          { tag: 'debian-buster', target: 'default', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'compose', target: 'compose', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'debian-buster-java11', target: 'default', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'compose-java11', target: 'compose', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'debian-buster-java17', target: 'default', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
-          { tag: 'compose-java17', target: 'compose', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
-          { tag: 'ubuntu-buster', target: 'default', debian-code-name: 'jammy', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'compose', target: 'compose', debian-code-name: 'jammy', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'ubuntu-jammy-java11', target: 'default', debian-code-name: 'jammy', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'compose-java11', target: 'compose', debian-code-name: 'jammy', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'ubuntu-jammy-java17', target: 'default', debian-code-name: 'jammy', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
-          { tag: 'compose-java17', target: 'compose', debian-code-name: 'jammy', java-version: '17', platforms: 'linux/arm64,linux/amd64' }
+          { tag: 'debian-buster', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'compose', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'debian-buster-java11', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'compose-java11', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'debian-buster-java17', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
+          { tag: 'compose-java17', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
+          { tag: 'ubuntu-focal', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'compose', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'ubuntu-focal-java11', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'compose-java11', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'ubuntu-focal-java17', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
+          { tag: 'compose-java17', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/arm64,linux/amd64' }
         ]
     runs-on: ubuntu-latest
     steps:
@@ -61,12 +61,14 @@ jobs:
         COMPOSE_VERSION: ${{needs.latest_versions.outputs.compose_version}}
         LLVM_VERSION: ${{needs.latest_versions.outputs.llvm_version}}
         JAVA_VERSION: ${{ matrix.versions.java-version }}
+        DISTORIBUTION: ${{ matrix.versions.distoribution }}
         DEBIAN_CODE_NAME: ${{ matrix.versions.debian-code-name }}
       run: |
           echo "LLVM_VERSION=$(echo ${LLVM_VERSION} | cut -d . -f1)" >> $GITHUB_ENV
           echo "PROTOCOL_BUFFERS_VERSION=${PROTOCOL_BUFFERS_VERSION}" >> $GITHUB_ENV
           echo "COMPOSE_VERSION=${COMPOSE_VERSION}" >> $GITHUB_ENV
           echo "JAVA_VERSION=${JAVA_VERSION}" >> $GITHUB_ENV
+          echo "DISTORIBUTION=${DISTORIBUTION}" >> $GITHUB_ENV
           echo "DEBIAN_CODE_NAME=${DEBIAN_CODE_NAME}" >> $GITHUB_ENV
 
     - run: |
@@ -115,4 +117,5 @@ jobs:
           PROTOCOL_BUFFERS_VERSION=${{ env.PROTOCOL_BUFFERS_VERSION }}
           COMPOSE_VERSION=${{ env.COMPOSE_VERSION }}
           JAVA_VERSION=${{ env.JAVA_VERSION }}
+          DISTORIBUTION=${{ env.DISTORIBUTION }}
           DEBIAN_CODE_NAME=${{ env.DEBIAN_CODE_NAME }}
