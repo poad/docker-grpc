@@ -17,8 +17,7 @@ WORKDIR /tmp
 RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOCOL_BUFFERS_VERSION}/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && rm -f tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
- && ls \
- && mv "/tmp/protobuf-${PROTOCOL_BUFFERS_VERSION}" /tmp/protobuf \
+ && mv "$(ls -d /tmp/protobuf-*)" /tmp/protobuf \
  && curl -fsSL https://download.docker.com/linux/${DISTORIBUTION}/gpg -o /tmp/docker-archive-keyring.gpg.key
 
 
