@@ -108,10 +108,13 @@ COPY --from=downloader /tmp/get-pip.py /tmp/get-pip.py
 RUN cat /tmp/get-pip.py | python3 \
  && rm -rf /var/lib/apt/lists/* /var/log/apt/* /var/log/alternatives.log /var/log/dpkg.log /var/log/faillog /var/log/lastlog /tmp/get-pip.py
 
+ENV RUSTUP_HOME="/usr" \
+    CARGO_HOME="/usr"
+
 COPY --from=downloader /tmp/rustup-init.sh /tmp/rustup-init.sh
 RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
  && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
 
-ENV PATH="/root/.cargo/bin/:/home/.mix/escripts:/root/.mix/escripts:${PATH}"
+ENV PATH="/home/.mix/escripts:/root/.mix/escripts:${PATH}"
 RUN if [ $(dpkg --print-architecture) != "arm64" ]; then cargo install grpc-compiler grpcio-compiler protobuf-codegen; fi
