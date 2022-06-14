@@ -98,7 +98,7 @@ RUN mkdir -p /usr/share/man/man1/ \
     bellsoft-java${JAVA_VERSION}-full \
     clang-${LLVM_VERSION} \
     lld-${LLVM_VERSION} \
-    esl-erlang \
+    erlang \
     elixir \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/erlang-solutions_all.deb
