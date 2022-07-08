@@ -44,14 +44,14 @@ jobs:
           { tag: 'compose', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'debian-buster-java11', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'compose-java11', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'debian-buster-java17', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
-          { tag: 'compose-java17', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
+          { tag: 'debian-buster-java17', target: 'default', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/amd64' },
+          { tag: 'compose-java17', target: 'compose', distoribution: 'debian', debian-code-name: 'buster', java-version: '17', platforms: 'linux/amd64' },
           { tag: 'ubuntu-focal', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'compose', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'ubuntu-focal-java11', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'compose-java11', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'ubuntu-focal-java17', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/arm64,linux/amd64' },
-          { tag: 'compose-java17', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/arm64,linux/amd64' }
+          { tag: 'ubuntu-focal-java17', target: 'default', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/amd64' },
+          { tag: 'compose-java17', target: 'compose', distoribution: 'ubuntu', debian-code-name: 'focal', java-version: '17', platforms: 'linux/amd64' }
         ]
     runs-on: ubuntu-latest
     steps:

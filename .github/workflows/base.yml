@@ -56,9 +56,9 @@ jobs:
       matrix:
         versions: [
           { tag: 'debian-buster-java11-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'debian-buster-java17-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '17', platforms: 'linux/amd64,linux/arm64' },
+          { tag: 'debian-buster-java17-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '17', platforms: 'linux/amd64' },
           { tag: 'ubuntu-focal-java11-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '11', platforms: 'linux/amd64' },
-          { tag: 'ubuntu-focal-java17-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64,linux/arm64' }
+          { tag: 'ubuntu-focal-java17-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64' }
         ]
     runs-on: ubuntu-latest
     steps:
