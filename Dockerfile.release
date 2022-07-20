@@ -2,7 +2,7 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=buster
 
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="3.21.2"
+ARG PROTOCOL_BUFFERS_VERSION="3.21.3"
 
 ARG JAVA_VERSION=11
 
