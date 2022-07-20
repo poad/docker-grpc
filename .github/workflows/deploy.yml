@@ -1,8 +1,8 @@
 name: Docker build and push (release)
  
 on:
-  release:
-    type: ['*']
+  push:
+    tags: ['*']
   workflow_dispatch:
 
 jobs:
