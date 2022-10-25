@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
-      protobuf_version: ${{ steps.protobuf.outputs.version }}
-      compose_version: ${{ steps.compose.outputs.version }}
-      llvm_version: ${{ steps.llvm.outputs.version }}
+      protobuf_version: ${{ steps.protobuf.outputs.protobuf_version }}
+      compose_version: ${{ steps.compose.outputs.compose_version }}
+      llvm_version: ${{ steps.llvm.outputs.llvm_version }}
     steps:
     - name: prepare
       run: |
@@ -38,17 +38,17 @@ jobs:
       id: protobuf
       run: |
         PROTOCOL_BUFFERS_VERSION="$(curl -sSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | jq -r .tag_name | cut -d'v' -f2)" && \
-        echo "::set-output name=version::${PROTOCOL_BUFFERS_VERSION}"
+        echo "protobuf_version=${PROTOCOL_BUFFERS_VERSION}" >> $GITHUB_OUTPUT
     - name: find latest vrersions (docker compose)
       id: compose
       run: |
         COMPOSE_VERSION="$(curl -sSL https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)" && \
-        echo "::set-output name=version::${COMPOSE_VERSION}"
+        echo "compose_version=${COMPOSE_VERSION}" >> $GITHUB_OUTPUT
     - name: find latest vrersions (llvm)
       id: llvm
       run: |
         LLVM_VERSION="$(curl -sSL https://api.github.com/repos/llvm/llvm-project/releases/latest | jq -r .tag_name | cut -d'-' -f2)" && \
-        echo "::set-output name=version::${LLVM_VERSION}"
+        echo "llvm_version=${LLVM_VERSION}" >> $GITHUB_OUTPUT
 
   docker_build_push:
     needs: latest_versions
