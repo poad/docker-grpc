@@ -55,8 +55,14 @@ jobs:
     strategy:
       matrix:
         versions: [
+          { tag: 'debian-bullseye-java11-base', distoribution: 'debian', debian-code-name: 'bullseye', flavor: '', target: 'base', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'debian-bullseye-java17-base', distoribution: 'debian', debian-code-name: 'bullseye', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64' },
+          { tag: 'debian-bullseye-java11-base', distoribution: 'debian', debian-code-name: 'bullseye', flavor: '-slim', target: 'base', java-version: '11', platforms: 'linux/amd64' },
+          { tag: 'debian-bullseye-java17-base', distoribution: 'debian', debian-code-name: 'bullseye', flavor: '-slim', target: 'base', java-version: '17', platforms: 'linux/amd64' },
           { tag: 'debian-buster-java11-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'debian-buster-java17-base', distoribution: 'debian', debian-code-name: 'buster', flavor: '-slim', target: 'base', java-version: '17', platforms: 'linux/amd64' },
+          # { tag: 'ubuntu-jammy-java11-base', distoribution: 'ubuntu', debian-code-name: 'jammy', flavor: '', target: 'base', java-version: '11', platforms: 'linux/amd64' },
+          # { tag: 'ubuntu-jammy-java17-base', distoribution: 'ubuntu', debian-code-name: 'jammy', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64' },
           { tag: 'ubuntu-focal-java11-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '11', platforms: 'linux/amd64' },
           { tag: 'ubuntu-focal-java17-base', distoribution: 'ubuntu', debian-code-name: 'focal', flavor: '', target: 'base', java-version: '17', platforms: 'linux/amd64' }
         ]

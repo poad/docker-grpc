@@ -2,13 +2,13 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=buster
 ARG FLAVOR="-slim"
 
-ARG COMPOSE_VERSION="2.7.0"
+ARG COMPOSE_VERSION="2.14.0"
 
 ARG JAVA_VERSION=11
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=14
+ARG LLVM_VERSION=15
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -70,8 +70,8 @@ RUN mkdir -p /usr/share/man/man1/ \
  && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/${DISTORIBUTION} $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
  && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
- && dpkg -i /tmp/erlang-solutions_all.deb \
- && apt-get update -qq \
+ && dpkg -i /tmp/erlang-solutions_all.deb
+RUN apt-get update -qq \
  && apt-get install -qqy --no-install-recommends \
     automake \
     libtool \
