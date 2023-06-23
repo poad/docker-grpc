@@ -1,14 +1,14 @@
 ARG DISTORIBUTION=debian
-ARG DEBIAN_CODE_NAME=buster
+ARG DEBIAN_CODE_NAME=bullseye
 ARG FLAVOR="-slim"
 
-ARG COMPOSE_VERSION="2.14.0"
+ARG COMPOSE_VERSION="2.19.0"
 
 ARG JAVA_VERSION=11
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=15
+ARG LLVM_VERSION=16
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -19,8 +19,8 @@ RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellso
  && curl -sSLo /tmp/erlang-solutions_all.deb https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb \
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
- && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key
-
+ && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key \
+ && curl -fsSL https://deb.nodesource.com/setup_18.x -o /tmp/setup_nodejs.sh
 
 FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
 
@@ -39,6 +39,7 @@ COPY --from=downloader /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-k
 COPY --from=downloader /tmp/bellsoft.key /tmp/bellsoft.key
 COPY --from=downloader /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key 
 COPY --from=downloader /tmp/erlang-solutions_all.deb /tmp/erlang-solutions_all.deb
+COPY --from=downloader /tmp/setup_nodejs.sh /tmp/setup_nodejs.sh
 
 WORKDIR /tmp
 
@@ -62,7 +63,10 @@ RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
  && apt-get full-upgrade -qqy \
  && apt-get install --no-install-recommends -qqy lsb-release ca-certificates gnupg2 binutils apt-utils \
- && cat /tmp/bellsoft.key | apt-key add - \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN cat /tmp/bellsoft.key | apt-key add - \
  && cat /tmp/docker-archive-keyring.gpg.key | apt-key add - \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
  && rm -rf /tmp/bellsoft.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key \
@@ -70,8 +74,13 @@ RUN mkdir -p /usr/share/man/man1/ \
  && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/${DISTORIBUTION} $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
  && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
- && dpkg -i /tmp/erlang-solutions_all.deb
+ && dpkg -i /tmp/erlang-solutions_all.deb \
+ && chmod +x /tmp/setup_nodejs.sh \
+ && /tmp/setup_nodejs.sh \
+ && rm -rf /tmp/setup_nodejs.sh
+
 RUN apt-get update -qq \
+ && apt-get full-upgrade -qqy \
  && apt-get install -qqy --no-install-recommends \
     automake \
     libtool \
@@ -100,6 +109,7 @@ RUN apt-get update -qq \
     lld-${LLVM_VERSION} \
     erlang \
     elixir \
+    nodejs \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/erlang-solutions_all.deb
 
@@ -114,6 +124,7 @@ ENV RUSTUP_HOME="/usr" \
 COPY --from=downloader /tmp/rustup-init.sh /tmp/rustup-init.sh
 RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
+ && npm install -g @bazel/bazelisk \
  && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
 
 ENV PATH="/home/.mix/escripts:/root/.mix/escripts:${PATH}"
