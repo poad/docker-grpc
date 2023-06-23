@@ -1,14 +1,14 @@
 ARG DISTORIBUTION=debian
-ARG DEBIAN_CODE_NAME=buster
+ARG DEBIAN_CODE_NAME=bullseye
 ARG FLAVOR="-slim"
 
-ARG COMPOSE_VERSION="2.14.0"
+ARG COMPOSE_VERSION="2.19.0"
 
 ARG JAVA_VERSION=11
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=15
+ARG LLVM_VERSION=16
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -20,7 +20,6 @@ RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellso
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
  && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key
-
 
 FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
 
@@ -45,6 +44,7 @@ WORKDIR /tmp
 ARG buildDeps=' \
   autoconf \
   apt-transport-https \
+  bazel-bootstrap \
   ca-certificates \
   curl \
   dpkg-dev \
@@ -62,7 +62,10 @@ RUN mkdir -p /usr/share/man/man1/ \
  && apt-get update -qq \
  && apt-get full-upgrade -qqy \
  && apt-get install --no-install-recommends -qqy lsb-release ca-certificates gnupg2 binutils apt-utils \
- && cat /tmp/bellsoft.key | apt-key add - \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN cat /tmp/bellsoft.key | apt-key add - \
  && cat /tmp/docker-archive-keyring.gpg.key | apt-key add - \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
  && rm -rf /tmp/bellsoft.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key \
@@ -71,7 +74,9 @@ RUN mkdir -p /usr/share/man/man1/ \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
  && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
  && dpkg -i /tmp/erlang-solutions_all.deb
+
 RUN apt-get update -qq \
+ && apt-get full-upgrade -qqy \
  && apt-get install -qqy --no-install-recommends \
     automake \
     libtool \

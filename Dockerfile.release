@@ -2,7 +2,7 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=buster
 
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="3.21.10"
+ARG PROTOCOL_BUFFERS_VERSION="23.3"
 
 ARG JAVA_VERSION=11
 
@@ -14,7 +14,7 @@ ARG PROTOCOL_BUFFERS_VERSION
 
 WORKDIR /tmp
 
-RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOCOL_BUFFERS_VERSION}/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
+RUN curl -sSLo "/tmp/protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOCOL_BUFFERS_VERSION}/protobuf-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && rm -f tar xf "protobuf-all-${PROTOCOL_BUFFERS_VERSION}.tar.gz" \
  && mv "$(ls -d /tmp/protobuf-*)" /tmp/protobuf \
@@ -25,12 +25,8 @@ FROM poad/docker-grpc:${DISTORIBUTION}-${DEBIAN_CODE_NAME}-java${JAVA_VERSION}-b
 
 COPY --from=download /tmp/protobuf /tmp/protobuf
 WORKDIR /tmp/protobuf 
-RUN ./autogen.sh \
- && ./configure --prefix=/usr \
- && make \
- && make check \
- && make install \
- && ldconfig \
+RUN bazel build :protoc :protobuf \
+ && cp bazel-bin/protoc /usr/local/bin \
  && rm -rf /tmp/protobuf /var/lib/apt/lists/* 
 
 WORKDIR /root
