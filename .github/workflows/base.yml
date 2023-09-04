@@ -80,7 +80,7 @@ jobs:
           echo "DISTORIBUTION=${DISTORIBUTION}" >> $GITHUB_ENV
           echo "FLAVOR=${FLAVOR}" >> $GITHUB_ENV
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
 
@@ -163,7 +163,7 @@ jobs:
         git config --global user.name "${{ secrets.GIT_USERNAME }}"
         git config --global user.email "${{ secrets.GIT_EMAIL }}"
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
 
