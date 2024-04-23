@@ -2,13 +2,13 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=bullseye
 ARG FLAVOR="-slim"
 
-ARG COMPOSE_VERSION="2.19.1"
+ARG COMPOSE_VERSION="2.26.1"
 
 ARG JAVA_VERSION=11
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=16
+ARG LLVM_VERSION=18
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -16,7 +16,6 @@ WORKDIR /tmp
 
 RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellsoft \
  && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh \
- && curl -sSLo /tmp/erlang-solutions_all.deb https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb \
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
  && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key \
@@ -38,7 +37,6 @@ ARG JAVA_VERSION
 COPY --from=downloader /tmp/docker-archive-keyring.gpg.key /tmp/docker-archive-keyring.gpg.key
 COPY --from=downloader /tmp/bellsoft.key /tmp/bellsoft.key
 COPY --from=downloader /tmp/llvm-snapshot.gpg.key /tmp/llvm-snapshot.gpg.key 
-COPY --from=downloader /tmp/erlang-solutions_all.deb /tmp/erlang-solutions_all.deb
 COPY --from=downloader /tmp/setup_nodejs.sh /tmp/setup_nodejs.sh
 
 WORKDIR /tmp
@@ -69,12 +67,11 @@ RUN mkdir -p /usr/share/man/man1/ \
 RUN cat /tmp/bellsoft.key | apt-key add - \
  && cat /tmp/docker-archive-keyring.gpg.key | apt-key add - \
  && cat /tmp/llvm-snapshot.gpg.key | apt-key add - \
- && rm -rf /tmp/bellsoft.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key \
+ && rm -rf /tmp/bellsoft.key /tmp/docker-archive-keyring.gpg.key /tmp/llvm-snapshot.gpg.key  /tmp/GPG-KEY-pmanager.asc \
  && echo "deb [arch=$(dpkg --print-architecture)] https://apt.bell-sw.com/ stable main" > /etc/apt/sources.list.d/bell-sw.list \
  && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/${DISTORIBUTION} $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
  && DISTRIBUTION=$(cat /etc/os-release | grep ^ID= | cut -d "=" -f2) \
  && echo "deb http://apt.llvm.org/${DEBIAN_CODE_NAME}/ llvm-toolchain-${DEBIAN_CODE_NAME}-${LLVM_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list  \
- && dpkg -i /tmp/erlang-solutions_all.deb \
  && chmod +x /tmp/setup_nodejs.sh \
  && /tmp/setup_nodejs.sh \
  && rm -rf /tmp/setup_nodejs.sh
@@ -110,8 +107,7 @@ RUN apt-get update -qq \
     erlang \
     elixir \
     nodejs \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/* /tmp/erlang-solutions_all.deb
+ && apt-get clean
 
 COPY --from=downloader /tmp/get-pip.py /tmp/get-pip.py
 
