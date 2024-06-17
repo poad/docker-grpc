@@ -105,7 +105,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: "Build and push ${{ matrix.versions.tag }}"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         push: true
         pull: true
