@@ -2,7 +2,7 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=bullseye
 
 # https://github.com/protocolbuffers/protobuf/releases
-ARG PROTOCOL_BUFFERS_VERSION="26.1"
+ARG PROTOCOL_BUFFERS_VERSION="30.2"
 
 ARG JAVA_VERSION=17
 

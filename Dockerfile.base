@@ -2,13 +2,13 @@ ARG DISTORIBUTION=debian
 ARG DEBIAN_CODE_NAME=bullseye
 ARG FLAVOR="-slim"
 
-ARG COMPOSE_VERSION="2.26.1"
+ARG COMPOSE_VERSION="2.34.0"
 
 ARG JAVA_VERSION=17
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=18
+ARG LLVM_VERSION=20
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -19,7 +19,7 @@ RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellso
  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker-archive-keyring.gpg.key \
  && curl -sSLo /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py \
  && curl -sSLo /tmp/llvm-snapshot.gpg.key https://apt.llvm.org/llvm-snapshot.gpg.key \
- && curl -fsSL https://deb.nodesource.com/setup_18.x -o /tmp/setup_nodejs.sh
+ && curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/setup_nodejs.sh
 
 FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
 
