@@ -31,7 +31,7 @@ RUN bazel build :protoc :protobuf \
 
 WORKDIR /root
 
-FROM default as compose
+FROM default AS compose
 
 ARG COMPOSE_VERSION
 
