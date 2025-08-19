@@ -23,7 +23,7 @@ RUN curl -sSLo /tmp/bellsoft.key https://download.bell-sw.com/pki/GPG-KEY-bellso
 
 FROM ${DISTORIBUTION}:${DEBIAN_CODE_NAME}${FLAVOR} AS base
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND="noninteractive"
 
 ARG DISTORIBUTION
 ARG DEBIAN_CODE_NAME
