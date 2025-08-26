@@ -8,7 +8,7 @@ ARG JAVA_VERSION=17
 
 ARG BASE=erlang:${OTP_MAJOR_VERSION}
 
-ARG LLVM_VERSION=20
+ARG LLVM_VERSION=21
 
 FROM buildpack-deps:${DEBIAN_CODE_NAME}-curl AS downloader
 
@@ -120,7 +120,6 @@ ENV RUSTUP_HOME="/usr" \
 COPY --from=downloader /tmp/rustup-init.sh /tmp/rustup-init.sh
 RUN chmod +x /tmp/rustup-init.sh \
  && /tmp/rustup-init.sh -y \
- && npm install -g @bazel/bazelisk \
  && rm -rf /var/lib/apt/lists/* /tmp/rustup-init.sh
 
 ENV PATH="/home/.mix/escripts:/root/.mix/escripts:${PATH}"
